@@ -1,13 +1,18 @@
 # Rust-Backed Personal Website
-This is super simple, just made to get up and running quickly. 
+This is super simple, just made to get up and running quickly. The basics of the server come from https://doc.rust-lang.org/book/ch20-01-single-threaded.html.
+
+Only supports http.
 
 ## Set Up Locally
 Install rust first.
 * `git clone github.com:ASchneidman/personal-website.git`
 * `cd personal-website`
-* `cargo run`
+* `cargo run -- localhost:7878`
 
-Currently, it listens on `7878`.
+To host on a public IP address on port 80, run with sudo.
+```
+sudo cargo run -- <public IP address>:80
+```
 
 ## Set Up on an AWS EC2 Instance
 * Create a new EC2 instance, ideally with Ubuntu.

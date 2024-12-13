@@ -1,9 +1,14 @@
 use std::{
-    fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}
+    env, fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}
 };
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        println!("Expects single argument containing a valid address and port to host on.");
+        return;
+    }
+    let listener = TcpListener::bind(args[1].as_str()).unwrap();
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
