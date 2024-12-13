@@ -8,19 +8,21 @@ fn main() {
         println!("Expects single argument containing a valid address and port to host on.");
         return;
     }
-    let listener = TcpListener::bind(args[1].as_str()).unwrap();
-
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
-
-        handle_connection(stream);
+    match TcpListener::bind(args[1].as_str()) {
+        Err(e) => println!("Failed to bind: {}", e),
+        Ok(listener) => {
+            for stream in listener.incoming() {
+                match stream {
+                    Err(e) => println!("Failed to receive stream: {}", e),
+                    Ok(s) => handle_connection(s),
+                }
+            }
+        }
     }
+
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&stream);
-    let request_line = buf_reader.lines().next().unwrap().unwrap();
-
+fn respond_to_request(request_line: &String, mut stream: &TcpStream) {
     let (status_line, filename) = if request_line == "GET / HTTP/1.1" {
         ("HTTP/1.1 200 OK", "src/index.html")
     } else {
@@ -33,5 +35,24 @@ fn handle_connection(mut stream: TcpStream) {
     let response =
         format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
-    stream.write_all(response.as_bytes()).unwrap();
+    match stream.write_all(response.as_bytes()) {
+        Ok(_) => return,
+        Err(e) => {
+            println!("Failed to write response: {}", e);
+        }
+    }
+
+}
+
+fn handle_connection(mut stream: TcpStream) {
+    let buf_reader = BufReader::new(&stream);
+    match buf_reader.lines().next() {
+        None => return,
+        Some(t) => {
+            match t {
+                Err(e) => println!("Failed to read request: {}", e),
+                Ok(t) => respond_to_request(&t, &stream),
+            }
+        }
+    }
 }
